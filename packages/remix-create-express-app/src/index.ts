@@ -176,26 +176,32 @@ const viteDevServer =
         }),
       )
 
-function importProductionBuild(
+let productionBuild: ServerBuild | undefined
+
+async function importProductionBuild(
   buildDirectory: string,
   serverBuildFile: string,
 ) {
-  return import(
-    /*@vite-ignore*/
-    url
-      .pathToFileURL(
-        path.resolve(
-          path.join(
-            process.cwd(),
-            `/${buildDirectory}/server/${serverBuildFile}`,
+  if (!productionBuild) {
+    productionBuild = await import(
+      /*@vite-ignore*/
+      url
+        .pathToFileURL(
+          path.resolve(
+            path.join(
+              process.cwd(),
+              `/${buildDirectory}/server/${serverBuildFile}`,
+            ),
           ),
-        ),
-      )
-      .toString()
-  ).then(build => {
-    setRoutes(build)
-    return build
-  }) as Promise<ServerBuild>
+        )
+        .toString()
+    ).then(build => {
+      setRoutes(build)
+      return build
+    })
+  }
+
+  return productionBuild
 }
 
 function importDevBuild() {
